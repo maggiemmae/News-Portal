@@ -30,33 +30,39 @@ namespace bll.Services
             this.roleManager = roleManager;
             this.mapper = mapper;
         }
+
         public async Task<string> Login(LoginModel userLogin)
         {
             var user = await userManager.FindByNameAsync(userLogin.UserName);
             var checkPassword = await userManager.CheckPasswordAsync(user, userLogin.Password);
 
-            if (user == null || !checkPassword || (DateTime.Now < user.LockoutEnd)) throw new Exception();
+            if (user == null) throw new NullReferenceException();
+            if (!checkPassword) throw new Exception("Wrong password");
+            if (DateTime.UtcNow < user.LockoutEnd) throw new Exception("User is blocked");
 
             var userRoles = await userManager.GetRolesAsync(user);
             var authClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserName)
             };
+
             authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
-
             var token = GetJwtSecurityToken(authClaims);
-
             return token;
-
         }
 
         public async Task<UserDto> Register(RegisterModel userRegister)
         {
             var userExists = await userManager.FindByNameAsync(userRegister.UserName);
             if (userExists != null) {
-                throw new Exception("User name is already exist");
+                throw new Exception("User name is already exists");
             }
-            User user = new()
+
+            if (userRegister.Role != UserRoles.Admin || userRegister.Role != UserRoles.User) {
+                throw new InvalidOperationException("Role doesn't exist");
+            }
+
+            var user = new User()
             {
                 FirstName = userRegister.FirstName,
                 LastName = userRegister.LastName,
@@ -69,37 +75,13 @@ namespace bll.Services
                 throw new Exception("User isn't created");
             }
 
-            await userManager.AddToRoleAsync(user, UserRoles.User);
-            return mapper.Map<User, UserDto>(user);
-        }
-
-        public async Task<UserDto> RegisterAdmin(RegisterModel userRegister)
-        {
-            var userExists = await userManager.FindByNameAsync(userRegister.UserName);
-            if (userExists != null) {
-                throw new Exception("User name is already exist");
-            }
-            User user = new()
-            {
-                FirstName = userRegister.FirstName,
-                LastName = userRegister.LastName,
-                DateOfBirth = userRegister.DateOfBirth,
-                UserName = userRegister.UserName,
-                Password = userRegister.Password
-            };
-            var result = await userManager.CreateAsync(user, userRegister.Password);
-            if (!result.Succeeded) {
-                throw new Exception("User isn't created");
-            }
-
             if (!await roleManager.RoleExistsAsync(UserRoles.Admin) ||
                 !await roleManager.RoleExistsAsync(UserRoles.User))
             {
                 await roleManager.CreateAsync(new ApplicationRole(UserRoles.Admin));
                 await roleManager.CreateAsync(new ApplicationRole(UserRoles.User));
             }
-
-            await userManager.AddToRoleAsync(user, UserRoles.Admin);
+            await userManager.AddToRoleAsync(user, userRegister.Role);
             return mapper.Map<User, UserDto>(user);
         }
 
@@ -109,11 +91,10 @@ namespace bll.Services
             var token = new JwtSecurityToken(
                 issuer: configuration["JWT:Issuer"],
                 audience: configuration["JWT:Audience"],
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256)
             );
-
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

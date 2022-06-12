@@ -1,4 +1,5 @@
-﻿using dal.Models;
+﻿using dal.Maps;
+using dal.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +18,9 @@ namespace dal.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().HasIndex(b => b.UserName).IsUnique();
-            modelBuilder.Entity<Post>().HasOne(a => a.User).WithMany(b => b.Posts).OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Post>().HasIndex(b => b.Title).IsUnique();
-            modelBuilder.Entity<Comment>().HasOne(a => a.User).WithMany(b => b.Comments).OnDelete(DeleteBehavior.NoAction);
-            modelBuilder.Entity<Comment>().HasOne(a => a.Post).WithMany(b => b.Comments).OnDelete(DeleteBehavior.Cascade);
-
+            new UserMap().Build(modelBuilder.Entity<User>());
+            new PostMap().Build(modelBuilder.Entity<Post>());
+            new CommentMap().Build(modelBuilder.Entity<Comment>());
             base.OnModelCreating(modelBuilder);
         }
     }

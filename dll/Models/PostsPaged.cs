@@ -2,13 +2,13 @@
 
 namespace dal.Models
 {
-    public class GetPostsPaged
+    public class PostsPaged
     {
         public IList<Post> Posts { get; set; }
 
         public int Pages { get; set; }
 
-        public GetPostsPaged(int pages, IList<Post> posts)
+        public PostsPaged(int pages, IList<Post> posts)
         {
             Pages = pages;
             Posts = posts;

@@ -25,14 +25,14 @@ namespace dal.Repository
         public async Task DeleteAsync(int id)
         {
             var user = await dbContext.Users.Include(x => x.Comments).Include(x => x.Posts).FirstOrDefaultAsync(x => x.Id == id);
-            if (user != null) 
-            {
-                dbContext.Users.Remove(user);
-                await dbContext.SaveChangesAsync();
+            if (user == null) {
+                throw new KeyNotFoundException("User not found");
             }
+            dbContext.Users.Remove(user);
+            await dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<User>> GetAllAsync()
         {
             return await dbContext.Users.ToListAsync();
         }
@@ -44,6 +44,10 @@ namespace dal.Repository
 
         public async Task UpdateAsync(User user)
         {
+            var item = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+            if (item == null) {
+                throw new KeyNotFoundException("User not found");
+            }
             dbContext.Users.Update(user);
             await dbContext.SaveChangesAsync();
         }

@@ -5,7 +5,7 @@ namespace dal.Interface
 {
     public interface IRepository<T>
     {
-        Task<IEnumerable<T>> GetAll();
+        Task<IEnumerable<T>> GetAllAsync();
 
         Task<T> GetByIdAsync(int id);
 

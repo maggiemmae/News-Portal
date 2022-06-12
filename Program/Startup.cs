@@ -18,6 +18,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using bll.Exceptions;
 
 namespace Program
 {
@@ -107,6 +108,7 @@ namespace Program
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseRouting();
 
             app.UseAuthentication();

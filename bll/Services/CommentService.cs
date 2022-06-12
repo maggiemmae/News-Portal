@@ -28,10 +28,10 @@ namespace bll.Services
         {
             var user = await userManager.FindByNameAsync(userName);
             if (user == null || comment == null || postId == 0) return false;
-            Comment item = new()
+            var item = new Comment()
             {
                 Text = comment.Text,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 AuthorId = user.Id,
                 AuthorName = user.UserName,
                 PostId = postId,
@@ -49,14 +49,14 @@ namespace bll.Services
         {
             var comment = await commentRepository.GetByIdAsync(id);
             if (comment == null) {
-                throw new Exception("Comment not found");
+                throw new NullReferenceException("Comment not found");
             }
             return mapper.Map<GetCommentDto>(comment);
         }
 
         public async Task<IEnumerable<GetCommentDto>> GetCommentListAsync()
         {
-            return mapper.Map<IEnumerable<GetCommentDto>>(await commentRepository.GetAll());
+            return mapper.Map<IEnumerable<GetCommentDto>>(await commentRepository.GetAllAsync());
         }
     }
 }

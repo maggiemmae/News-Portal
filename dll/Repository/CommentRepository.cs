@@ -1,8 +1,10 @@
-﻿using dal.Context;
+﻿using System;
+using dal.Context;
 using dal.Interface;
 using dal.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace dal.Repository
@@ -26,14 +28,14 @@ namespace dal.Repository
         public async Task DeleteAsync(int id)
         {
             var comment = await dbContext.Comments.FirstOrDefaultAsync(x => x.CommentId == id);
-            if (comment != null)
-            {
-                dbContext.Comments.Remove(comment);
-                await dbContext.SaveChangesAsync();
+            if (comment == null) {
+                throw new KeyNotFoundException("Comment not found");
             }
+            dbContext.Comments.Remove(comment);
+            await dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Comment>> GetAll()
+        public async Task<IEnumerable<Comment>> GetAllAsync()
         {
             return await dbContext.Comments.ToListAsync();
         }

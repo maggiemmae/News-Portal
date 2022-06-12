@@ -1,15 +1,15 @@
-﻿using bll.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using bll.DTO.Comment;
+﻿using bll.DTO.Comment;
+using bll.DTO.User;
+using bll.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Program.Controllers
 {
-    
+    [Route("api/[controller]")]
     [ApiController]
     public class CommentController : ControllerBase
     {
@@ -23,42 +23,26 @@ namespace Program.Controllers
         /// <summary>
         /// Creates a comment.
         /// </summary>
-        // POST: api/Post/1
-        [Route("api/Post/{id}")]
+        // POST: api/Comment/1
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost]
-        public async Task<IActionResult> AddCommentAsync([FromBody] AddCommentDto comment, [FromRoute] int id)
+        [HttpPost("{postId}")]
+        public async Task<IActionResult> AddCommentAsync([FromBody] AddCommentDto comment, [FromRoute] int postId)
         {
-            try
-            {
-                var userName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                await commentService.AddCommentAsync(comment, userName, id);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            var userName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            await commentService.AddCommentAsync(comment, userName, postId);
+            return Ok();
         }
 
         /// <summary>
         /// Deletes a Comment by Id.
         /// </summary>
         //DELETE: api/Comment/1
-        [Route("api/Comment/{id}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
-        [HttpDelete]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCommentAsync(int id)
         {
-            try
-            {
-                await commentService.DeleteCommentAsync(id);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            await commentService.DeleteCommentAsync(id);
+            return Ok();
         }
     }
 }

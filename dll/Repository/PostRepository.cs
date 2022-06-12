@@ -27,17 +27,16 @@ namespace dal.Repository
         public async Task DeleteAsync(int id)
         {
             var post = await dbContext.Posts.FirstOrDefaultAsync(x => x.PostId == id);
-            if (post != null)
-            {
-                dbContext.Posts.Remove(post);
-                await dbContext.SaveChangesAsync();
+            if (post == null) {
+                throw new KeyNotFoundException("Post not found");
             }
+            dbContext.Posts.Remove(post); await dbContext.SaveChangesAsync();
         }
 
-        public async Task<GetPostsPaged> GetPostsAsync(int page)
+        public async Task<PostsPaged> GetPostsAsync(int page)
         {
             if (dbContext.Posts == null) {
-                throw new Exception("Posts not found");
+                throw new NullReferenceException("Posts not found");
             }
 
             var pageResults = 2f;
@@ -48,7 +47,7 @@ namespace dal.Repository
                 .Take((int)pageResults)
                 .ToListAsync();
 
-            var result = new GetPostsPaged(pageCount, posts);
+            var result = new PostsPaged(pageCount, posts);
 
             return result;
         }
@@ -61,16 +60,11 @@ namespace dal.Repository
         public async Task UpdateAsync(Post post)
         {
             var item = await dbContext.Posts.FirstOrDefaultAsync(x => x.PostId == post.PostId);
-            if (item != null)
-            {
-                dbContext.Posts.Update(item);
-                await dbContext.SaveChangesAsync();
+            if (item == null) {
+                throw new KeyNotFoundException("Post not found");
             }
-        }
-
-        public Task<IEnumerable<Post>> GetAll()
-        {
-            throw new NotImplementedException();
+            dbContext.Posts.Update(item);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

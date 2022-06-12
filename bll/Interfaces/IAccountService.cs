@@ -11,8 +11,6 @@ namespace bll.Interfaces
 
         Task<UserDto> Register(RegisterModel userRegister);
 
-        Task<UserDto> RegisterAdmin(RegisterModel userRegister);
-
         string GetJwtSecurityToken(List<Claim> authClaims);
     }
 }

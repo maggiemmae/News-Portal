@@ -1,14 +1,13 @@
 ﻿using bll.DTO.User;
 using bll.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Program.Controllers
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -28,14 +27,7 @@ namespace Program.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserListAsync()
         {
-            try
-            {
-                return Ok(await userService.GetUserListAsync());
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            return Ok(await userService.GetUserListAsync());
         }
 
         /// <summary>
@@ -45,15 +37,8 @@ namespace Program.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUserAsync(int id)
         {
-            try
-            {
-                await userService.DeleteUserAsync(id);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            await userService.DeleteUserAsync(id);
+            return Ok();
         }
 
         /// <summary>
@@ -63,15 +48,8 @@ namespace Program.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateUserAsync([FromBody] UpdateUserDto user)
         {
-            try
-            {
-                await userService.UpdateUserAsync(user);
-                return Ok();
-            }
-            catch (Exception exp)
-            {
-                return NotFound(exp.Message);
-            }
+            await userService.UpdateUserAsync(user);
+            return Ok();
         }
 
         /// <summary>
@@ -79,16 +57,9 @@ namespace Program.Controllers
         /// </summary>
         // GET: api/User/1
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserByIdAsync([FromRoute]int id)
+        public async Task<IActionResult> GetUserByIdAsync([FromRoute] int id)
         {
-            try
-            {
-                return Ok(await userService.GetUserByIdAsync(id));
-            }
-            catch (Exception exp)
-            {
-                return NotFound(exp.Message);
-            }
+            return Ok(await userService.GetUserByIdAsync(id));
         }
 
         /// <summary>
@@ -98,15 +69,8 @@ namespace Program.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> BlockUserAsync(int id, [FromBody] int hours)
         {
-            try
-            {
-                await userService.BlockUserAsync(id, hours);
-                return Ok();
-            }
-            catch (Exception exp)
-            {
-                return NotFound(exp.Message);
-            }
+            await userService.BlockUserAsync(id, hours);
+            return Ok();
         }
     }
 }

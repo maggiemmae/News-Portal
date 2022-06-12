@@ -28,12 +28,12 @@ namespace bll.Services
         public async Task<bool> AddPostAsync(AddPostViewModel post, string userName)
         {
             var user = await userManager.FindByNameAsync(userName);
-            if (user == null || post == null) return false;
-            Post item = new()
+            if (user == null || post == null) throw new NullReferenceException("Post not found");
+            var item = new Post()
             {
                 Title = post.Title,
                 Text = post.Text,
-                CreatedDate = DateTime.Now,
+                CreatedDate = DateTime.UtcNow,
                 AuthorId = user.Id,
                 AuthorName = user.UserName
             };
@@ -50,9 +50,8 @@ namespace bll.Services
         {
             var post = await postRepository.GetByIdAsync(id);
             if (post == null) {
-                throw new Exception("Post not found");
+                throw new KeyNotFoundException("Post not found");
             }
-
             return mapper.Map<GetPostByIdDto>(post);
         }
 
@@ -72,7 +71,7 @@ namespace bll.Services
         {
             var item = await postRepository.GetByIdAsync(post.PostId);
             if (item == null) {
-                throw new Exception("Post not found");
+                throw new NullReferenceException("Post not found");
             }
             item.Title = post.Title;
             item.Text = post.Text;

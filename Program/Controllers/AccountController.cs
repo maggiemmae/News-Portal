@@ -1,7 +1,6 @@
 ﻿using bll.DTO.User;
 using bll.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 
 namespace Program.Controllers
@@ -24,15 +23,8 @@ namespace Program.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            try
-            {
-                var result = await accountService.Login(model);
-                return Ok(result);
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
+            var result = await accountService.Login(model);
+            return Ok(result);
         }
 
         /// <summary>
@@ -42,33 +34,8 @@ namespace Program.Controllers
         [HttpPost("registration")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            try
-            {
-                await accountService.Register(model);
-                return Ok();
-            }
-            catch (Exception exp)
-            {
-                return NotFound(exp.Message);
-            }
-        }
-
-        /// <summary>
-        /// Registers admin.
-        /// </summary>
-        // POST: api/Login 
-        [HttpPost("adminregistration")]
-        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
-        {
-            try
-            {
-                await accountService.RegisterAdmin(model);
-                return Ok();
-            }
-            catch (Exception exp)
-            {
-                return NotFound(exp.Message);
-            }
+            await accountService.Register(model);
+            return Ok();
         }
     }
 }

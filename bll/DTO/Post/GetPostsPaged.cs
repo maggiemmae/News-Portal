@@ -4,7 +4,7 @@ namespace bll.DTO.Post
 {
     public class GetPostsPaged
     {
-        public List<GetPostsDto> Posts { get; set; }
+        public IList<GetPostsDto> Posts { get; set; }
 
         public int Pages { get; set; }
 
