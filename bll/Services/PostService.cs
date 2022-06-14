@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using GetPostsPaged = bll.DTO.Post.GetPostsPaged;
+using Utils.Exceptions;
 
 namespace bll.Services
 {
@@ -28,7 +28,10 @@ namespace bll.Services
         public async Task<bool> AddPostAsync(AddPostViewModel post, string userName)
         {
             var user = await userManager.FindByNameAsync(userName);
-            if (user == null || post == null) throw new NullReferenceException("Post not found");
+            if (user == null || post == null) {
+                throw new NotFoundException("Post can't be empty");
+            }
+
             var item = new Post()
             {
                 Title = post.Title,
@@ -50,20 +53,16 @@ namespace bll.Services
         {
             var post = await postRepository.GetByIdAsync(id);
             if (post == null) {
-                throw new KeyNotFoundException("Post not found");
+                throw new NotFoundException(nameof(Post), id);
             }
+
             return mapper.Map<GetPostByIdDto>(post);
         }
 
-        public async Task<GetPostsPaged> GetPostListAsync(int page)
+        public async Task<PagedList<GetPostsDto>> GetPostListAsync(PostParameters postParameters)
         {
-            var postsPaged = await postRepository.GetPostsAsync(page);
-            var result = new GetPostsPaged()
-            {
-                Pages = postsPaged.Pages,
-                CurrentPage = page,
-                Posts = mapper.Map<List<GetPostsDto>>(postsPaged.Posts)
-            };
+            var postsPaged = await postRepository.GetPostsAsync(postParameters);
+            var result = new PagedList<GetPostsDto>(mapper.Map<IEnumerable<GetPostsDto>>(postsPaged.Items), postsPaged.TotalCount, postsPaged.CurrentPage, postParameters.PageSize);
             return result;
         }
 
@@ -71,8 +70,9 @@ namespace bll.Services
         {
             var item = await postRepository.GetByIdAsync(post.PostId);
             if (item == null) {
-                throw new NullReferenceException("Post not found");
+                throw new NotFoundException(nameof(Post), post.PostId);
             }
+
             item.Title = post.Title;
             item.Text = post.Text;
 

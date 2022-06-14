@@ -1,6 +1,5 @@
 ﻿using dal.Context;
 using dal.Interface;
-using dal.Models;
 using dal.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,9 +13,9 @@ namespace dal
         {
             var connectionString = conf.GetConnectionString("DefaultConnection");
 
-            services.AddTransient<IRepository<User>, UserRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IPostRepository, PostRepository>();
-            services.AddTransient<IRepository<Comment>, CommentRepository>();
+            services.AddTransient<ICommentRepository, CommentRepository>();
             services.AddDbContext<ApplicationContext>(options =>
                 options.UseSqlServer(connectionString, config => config.MigrationsAssembly("Migrations")));
             return services;

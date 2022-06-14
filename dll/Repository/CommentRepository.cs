@@ -1,15 +1,14 @@
-﻿using System;
-using dal.Context;
+﻿using dal.Context;
 using dal.Interface;
 using dal.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
+using Utils.Exceptions;
 
 namespace dal.Repository
 {
-    public class CommentRepository : IRepository<Comment>
+    public class CommentRepository : ICommentRepository
     {
         private readonly ApplicationContext dbContext;
 
@@ -29,8 +28,9 @@ namespace dal.Repository
         {
             var comment = await dbContext.Comments.FirstOrDefaultAsync(x => x.CommentId == id);
             if (comment == null) {
-                throw new KeyNotFoundException("Comment not found");
+                throw new NotFoundException(nameof(Comment), id);
             }
+
             dbContext.Comments.Remove(comment);
             await dbContext.SaveChangesAsync();
         }

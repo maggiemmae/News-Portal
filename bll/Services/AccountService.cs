@@ -13,6 +13,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Utils.Exceptions;
 
 namespace bll.Services
 {
@@ -36,9 +37,17 @@ namespace bll.Services
             var user = await userManager.FindByNameAsync(userLogin.UserName);
             var checkPassword = await userManager.CheckPasswordAsync(user, userLogin.Password);
 
-            if (user == null) throw new NullReferenceException();
-            if (!checkPassword) throw new Exception("Wrong password");
-            if (DateTime.UtcNow < user.LockoutEnd) throw new Exception("User is blocked");
+            if (user == null) {
+                throw new NotFoundException("User not found");
+            }
+
+            if (!checkPassword) {
+                throw new NotFoundException("Wrong password");
+            }
+
+            if (DateTime.UtcNow < user.LockoutEnd) {
+                throw new NotFoundException("User is blocked");
+            }
 
             var userRoles = await userManager.GetRolesAsync(user);
             var authClaims = new List<Claim>
@@ -55,11 +64,11 @@ namespace bll.Services
         {
             var userExists = await userManager.FindByNameAsync(userRegister.UserName);
             if (userExists != null) {
-                throw new Exception("User name is already exists");
+                throw new NotFoundException("User name is already exists");
             }
 
-            if (userRegister.Role != UserRoles.Admin || userRegister.Role != UserRoles.User) {
-                throw new InvalidOperationException("Role doesn't exist");
+            if (userRegister.Role is not (UserRoles.Admin or UserRoles.User)) {
+                throw new NotFoundException("Role doesn't exist");
             }
 
             var user = new User()
@@ -72,15 +81,9 @@ namespace bll.Services
             };
             var result = await userManager.CreateAsync(user, userRegister.Password);
             if (!result.Succeeded) {
-                throw new Exception("User isn't created");
+                throw new NotFoundException("User isn't created");
             }
 
-            if (!await roleManager.RoleExistsAsync(UserRoles.Admin) ||
-                !await roleManager.RoleExistsAsync(UserRoles.User))
-            {
-                await roleManager.CreateAsync(new ApplicationRole(UserRoles.Admin));
-                await roleManager.CreateAsync(new ApplicationRole(UserRoles.User));
-            }
             await userManager.AddToRoleAsync(user, userRegister.Role);
             return mapper.Map<User, UserDto>(user);
         }

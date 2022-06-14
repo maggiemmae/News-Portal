@@ -26,7 +26,7 @@ namespace Program.Controllers
         // POST: api/Comment/1
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("{postId}")]
-        public async Task<IActionResult> AddCommentAsync([FromBody] AddCommentDto comment, [FromRoute] int postId)
+        public async Task<IActionResult> AddComment([FromBody] AddCommentDto comment, [FromRoute] int postId)
         {
             var userName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             await commentService.AddCommentAsync(comment, userName, postId);
@@ -39,7 +39,7 @@ namespace Program.Controllers
         //DELETE: api/Comment/1
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCommentAsync(int id)
+        public async Task<IActionResult> DeleteComment(int id)
         {
             await commentService.DeleteCommentAsync(id);
             return Ok();

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using dal.Models;
+using Newtonsoft.Json;
 
 namespace Program.Controllers
 {
@@ -24,10 +26,10 @@ namespace Program.Controllers
         /// Gets all Posts.
         /// </summary>
         // GET: api/Post
-        [HttpGet("{page}")]
-        public async Task<IActionResult> GetPostListAsync(int page)
+        [HttpGet]
+        public async Task<IActionResult> GetPostList([FromQuery] PostParameters postParameters)
         {
-            var result = await postService.GetPostListAsync(page);
+            var result = await postService.GetPostListAsync(postParameters);
             return Ok(result);
         }
 
@@ -35,8 +37,8 @@ namespace Program.Controllers
         /// Gets a Post by Id.
         /// </summary>
         // GET: api/Post/1
-        [HttpGet("page/{id}")]
-        public async Task<IActionResult> GetPostByIdAsync(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPostById(int id)
         {
             var result = await postService.GetPostByIdAsync(id);
             return Ok(result);
@@ -48,7 +50,7 @@ namespace Program.Controllers
         // DELETE: api/Post/1
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePostAsync(int id)
+        public async Task<IActionResult> DeletePost(int id)
         {
             await postService.DeletePostAsync(id);
             return Ok();
@@ -60,7 +62,7 @@ namespace Program.Controllers
         // PUT: api/Post
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
         [HttpPut]
-        public async Task<IActionResult> UpdatePostAsync([FromBody] UpdatePostDto post)
+        public async Task<IActionResult> UpdatePost([FromBody] UpdatePostDto post)
         {
             await postService.UpdatePostAsync(post);
             return Ok();
@@ -72,7 +74,7 @@ namespace Program.Controllers
         // POST: api/Post
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.Admin)]
         [HttpPost]
-        public async Task<IActionResult> AddPostAsync([FromBody] AddPostViewModel post)
+        public async Task<IActionResult> AddPost([FromBody] AddPostViewModel post)
         {
             var userName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             await postService.AddPostAsync(post, userName);

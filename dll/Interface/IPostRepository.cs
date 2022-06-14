@@ -3,16 +3,8 @@ using System.Threading.Tasks;
 
 namespace dal.Interface
 {
-    public interface IPostRepository
+    public interface IPostRepository : IRepository<Post>
     {
-        Task<PostsPaged> GetPostsAsync(int page);
-
-        Task<Post> GetByIdAsync(int id);
-
-        Task UpdateAsync(Post item);
-
-        Task<Post> CreateAsync(Post item);
-
-        Task DeleteAsync(int id);
+        Task<PagedList<Post>> GetPostsAsync(PostParameters postParameters);
     }
 }

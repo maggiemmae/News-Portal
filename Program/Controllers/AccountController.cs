@@ -34,8 +34,8 @@ namespace Program.Controllers
         [HttpPost("registration")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            await accountService.Register(model);
-            return Ok();
+            var result = await accountService.Register(model);
+            return Ok(result);
         }
     }
 }

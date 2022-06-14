@@ -1,5 +1,6 @@
 using AutoMapper;
 using bll;
+using bll.DTO.User;
 using bll.Maps;
 using dal;
 using dal.Context;
@@ -18,7 +19,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
-using bll.Exceptions;
+using System.Threading.Tasks;
+using Utils.Exceptions;
 
 namespace Program
 {
@@ -91,8 +93,9 @@ namespace Program
                     }
                 });
             });
-            services.AddAuthorization();
-            services.AddControllers().AddJsonOptions(x =>
+
+            services.AddControllers(options => options.Filters.Add<ApiExceptionFilterAttribute>())
+                .AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
             services.InitializeBll();
@@ -100,7 +103,7 @@ namespace Program
             InitAutoMapper(services);
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "NewsPortal v1"));
@@ -108,13 +111,14 @@ namespace Program
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+
+            CreateRoles(serviceProvider).Wait();
         }
 
         private void InitAutoMapper(IServiceCollection services)
@@ -123,6 +127,19 @@ namespace Program
             {
                 x.AddProfile<Profiles>();
             }).CreateMapper());
+        }
+
+        public static async Task CreateRoles(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+
+            if (!await roleManager.RoleExistsAsync(UserRoles.Admin)) {
+                await roleManager.CreateAsync(new ApplicationRole(UserRoles.Admin));
+            }
+
+            if (!await roleManager.RoleExistsAsync(UserRoles.User)) {
+                await roleManager.CreateAsync(new ApplicationRole(UserRoles.User));
+            }
         }
     }
 }

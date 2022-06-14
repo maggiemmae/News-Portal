@@ -1,5 +1,6 @@
 ﻿using bll.DTO.User;
 using bll.Interfaces;
+using dal.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +26,10 @@ namespace Program.Controllers
         /// </summary>
         // GET: api/User
         [HttpGet]
-        public async Task<IActionResult> GetUserListAsync()
+        public async Task<IActionResult> GetUserList([FromQuery] UserParameters userParameters)
         {
-            return Ok(await userService.GetUserListAsync());
+            var result = await userService.GetUserListAsync(userParameters);
+            return Ok(result);
         }
 
         /// <summary>
@@ -35,7 +37,7 @@ namespace Program.Controllers
         /// </summary>
         // DELETE: api/User/1
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserAsync(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             await userService.DeleteUserAsync(id);
             return Ok();
@@ -46,7 +48,7 @@ namespace Program.Controllers
         /// </summary>
         // PUT: api/User 
         [HttpPut]
-        public async Task<IActionResult> UpdateUserAsync([FromBody] UpdateUserDto user)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto user)
         {
             await userService.UpdateUserAsync(user);
             return Ok();
@@ -57,7 +59,7 @@ namespace Program.Controllers
         /// </summary>
         // GET: api/User/1
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserByIdAsync([FromRoute] int id)
+        public async Task<IActionResult> GetUserById([FromRoute] int id)
         {
             return Ok(await userService.GetUserByIdAsync(id));
         }
@@ -67,7 +69,7 @@ namespace Program.Controllers
         /// </summary>
         // PUT: api/User 
         [HttpPut("{id}")]
-        public async Task<IActionResult> BlockUserAsync(int id, [FromBody] int hours)
+        public async Task<IActionResult> BlockUser(int id, [FromBody] int hours)
         {
             await userService.BlockUserAsync(id, hours);
             return Ok();

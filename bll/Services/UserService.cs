@@ -6,33 +6,36 @@ using dal.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Utils.Exceptions;
 using Utils.Helpers;
 
 namespace bll.Services
 {
     public class UserService : IUserService
     {
-
         private readonly IMapper mapper;
-        private readonly IRepository<User> userRepository;
+        private readonly IUserRepository userRepository;
 
-        public UserService(IRepository<User> userRepository, IMapper mapper)
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             this.mapper = mapper;
             this.userRepository = userRepository;
         }
 
-        public async Task<IEnumerable<UserDto>> GetUserListAsync()
+        public async Task<PagedList<UserDto>> GetUserListAsync(UserParameters userParameters)
         {
-            return mapper.Map<IEnumerable<UserDto>>(await userRepository.GetAllAsync());
+            var usersPaged = await userRepository.GetAllAsync(userParameters);
+            var result = new PagedList<UserDto>(mapper.Map<IEnumerable<UserDto>>(usersPaged.Items), usersPaged.TotalCount, usersPaged.CurrentPage, userParameters.PageSize);
+            return result;
         }
 
         public async Task<UserDto> GetUserByIdAsync(int id)
         {
             var user = await userRepository.GetByIdAsync(id);
             if (user == null) {
-                throw new KeyNotFoundException("User not found");
+                throw new NotFoundException(nameof(User), id);
             }
+
             return mapper.Map<User, UserDto>(user);
         }
 
@@ -40,8 +43,9 @@ namespace bll.Services
         {
             var item = await userRepository.GetByIdAsync(user.Id);
             if (item == null) {
-                throw new NullReferenceException("User not found");
+                throw new NotFoundException(nameof(User), user.Id);
             }
+
             item.FirstName = user.FirstName;
             item.LastName = user.LastName;
             item.DateOfBirth = user.DateOfBirth;
@@ -61,8 +65,9 @@ namespace bll.Services
         {
             var item = await userRepository.GetByIdAsync(id);
             if (item == null) {
-                throw new KeyNotFoundException("User not found");
+                throw new NotFoundException(nameof(User), id);
             }
+
             item.LockoutEnd = DateTimeOffset.UtcNow.AddHours(hours);
             await userRepository.UpdateAsync(item);
             return true;

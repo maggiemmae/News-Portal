@@ -2,12 +2,12 @@
 using dal.Interface;
 using dal.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Utils.Exceptions;
 
 namespace dal.Repository
 {
-    public class UserRepository : IRepository<User>
+    public class UserRepository : IUserRepository
     {
         private readonly ApplicationContext dbContext;
 
@@ -26,15 +26,25 @@ namespace dal.Repository
         {
             var user = await dbContext.Users.Include(x => x.Comments).Include(x => x.Posts).FirstOrDefaultAsync(x => x.Id == id);
             if (user == null) {
-                throw new KeyNotFoundException("User not found");
+                throw new NotFoundException(nameof(User), id);
             }
+
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<PagedList<User>> GetAllAsync(UserParameters userParameters)
         {
-            return await dbContext.Users.ToListAsync();
+            if (dbContext.Users == null) {
+                throw new NotFoundException("Users not found");
+            }
+
+            var users = await PagedList<User>.ToPagedListAsync(
+                dbContext.Users,
+                userParameters.PageNumber,
+                userParameters.PageSize);
+
+            return users;
         }
 
         public async Task<User> GetByIdAsync(int id)
@@ -46,8 +56,9 @@ namespace dal.Repository
         {
             var item = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
             if (item == null) {
-                throw new KeyNotFoundException("User not found");
+                throw new NotFoundException(nameof(User), user.Id);
             }
+
             dbContext.Users.Update(user);
             await dbContext.SaveChangesAsync();
         }
